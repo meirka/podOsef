@@ -1,0 +1,73 @@
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title>{{ site.Title }}</title>
+        <link>{{ site.BaseURL }}</link>
+        <language>{{ .Site.Params.contentLanguage | default "en-US" }}</language>
+        <description>{{ site.Params.description }}</description>
+
+        <itunes:explicit>{{ site.Params.itunesExplicit }}</itunes:explicit>
+        <itunes:image href="{{ absURL "media/covers/rss_cover.png" }}"/>
+        <itunes:keywords>{{ site.Params.itunesKeywords }}</itunes:keywords>
+
+        {{- range site.Params.itunesCategories }}
+        <itunes:category text="{{ .text }}">
+            {{- range .sub }}
+            <itunes:category text="{{ . }}"/>
+            {{- end }}
+        </itunes:category>
+        {{- end }}
+
+        <itunes:owner>
+            <itunes:name>{{ site.Params.itunesOwnerName }}</itunes:name>
+            <itunes:email>{{ site.Params.itunesOwnerEmail }}</itunes:email>
+        </itunes:owner>
+
+
+        {{ $urlLen := 50 }}
+        {{ $pattern := "(?i)\\b((?:https?:\\/\\/|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}\\/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))" }}
+        {{ $eps := partial "episodes-data.html" . }}
+        {{ range sort $eps "sortkey" "desc" }}
+            {{ $title := .title | default "Untitled" }}
+            {{ $pub := .time }}
+            {{ $file := .file | default "" }}
+            {{ $audioURL := "" }}
+            {{ if $file }}{{ $audioURL = absURL (printf "media/episodes/%s" $file) }}{{ end }}
+            {{ $mime := .mime | default "audio/mpeg" }}
+            <item>
+                <title>{{ $title }}</title>
+                {{ $desc := "" }}
+                {{ with .lyrics }}
+                  {{ $text := replace . "\r\n" "\n" }}
+                  {{ $text = replace $text "\r" "\n" }}
+                  {{ $lines := slice }}
+                  {{ range $line := split $text "\n" }}
+                    {{ $out := $line }}
+                    {{ range $url := findRE $pattern $line }}
+                      {{ $label := replaceRE `(?i)^(https?://|www\.)` "" $url }}
+                      {{ if ge (len $label) $urlLen }}
+                        {{ $label = printf "%s..." (substr $label 0 $urlLen) }}
+                      {{ end }}
+                      {{ $link := printf "<a href=\"%s\">%s</a>" $url $label }}
+                      {{ $out = replace $out $url $link }}
+                    {{ end }}
+                    {{ $lines = $lines | append (printf "%s<br>" $out) }}
+                  {{ end }}
+                  {{ $desc = delimit $lines "" | safeHTML }}
+                {{ end }}
+                {{ if $desc }}
+                  {{ $desc = replace $desc "]]>" "]]]]><![CDATA[>" }}
+                  {{ printf "<description><![CDATA[%s]]></description>" $desc | safeHTML }}
+                {{ else }}
+                  <description>No show notes</description>
+                {{ end }}
+
+                <pubDate>{{ $pub.Format "Mon, 2 Jan 2006 15:04:05 -0700" }}</pubDate>
+                <guid isPermaLink="false">{{ $audioURL }}</guid>
+                <enclosure url="{{ $audioURL }}" length="{{ .sizeBytes }}" type="{{ $mime }}" />
+                <itunes:duration>{{ .duration }}</itunes:duration>
+                <author>{{ .artists }}</author>
+            </item>
+            {{ end }}
+
+    </channel>
+</rss>

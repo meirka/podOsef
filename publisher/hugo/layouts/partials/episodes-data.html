@@ -1,0 +1,40 @@
+{{- $eps := slice -}}
+{{- range $id, $raw := .Site.Data.generated.episodes -}}
+  {{- $ep := $raw -}}
+  {{- if reflect.IsSlice $raw -}}
+    {{- $ep = index $raw 0 -}}
+  {{- end -}}
+
+  {{- $fd := (index $ep "FileModifyDate") | default "" -}}
+  {{- $fd = replaceRE `^(\d{4}):(\d{2}):(\d{2})\s+` `${1}-${2}-${3}T` $fd -}}
+  {{- $t := time.AsTime $fd -}}
+
+  {{- $file := (index $ep "FileName") | default "" -}}
+  {{- $m := findRE `\d+` $file -}}
+  {{- $numstr := "0" -}}
+  {{- if ge (len $m) 1 -}}{{- $numstr = index $m 0 -}}{{- end -}}
+  {{- $numstr = replaceRE `^0+` "" $numstr -}}
+  {{- if eq $numstr "" -}}{{- $numstr = "0" -}}{{- end -}}
+  {{- $n := $numstr | int -}}
+  {{- $sortkey := printf "%010d" $n -}}
+  {{- $duration := (index $ep "Duration") | default "" -}}
+  {{- $duration = replaceRE `\s*\(approx\)\s*$` "" $duration -}}
+  {{- $sizeBytes := printf "%d" (int (index $ep "FileSizeBytes")) | default "N/A" -}}
+
+  {{- $eps = $eps | append (dict
+    "sortkey" $sortkey
+    "num" $n
+    "ts" $t.Unix
+    "time" $t
+    "title" (index $ep "Title")
+    "file" (index $ep "FileName")
+    "lyrics" (index $ep "Lyrics")
+    "artists" (index $ep "Artist")
+    "duration" $duration
+    "filesize" (index $ep "FileSize")
+    "sizeBytes" $sizeBytes
+    "mime" (index $ep "MIMEType")
+    "picture" (index $ep "PictureName")
+  ) -}}
+{{- end -}}
+{{- return $eps -}}

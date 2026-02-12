@@ -1,0 +1,16 @@
+FROM alpine:3.20
+
+RUN apk add --no-cache \
+    bash \
+    coreutils \
+    exiftool \
+    findutils \
+    hugo \
+    inotify-tools
+
+WORKDIR /work
+COPY publisher/scripts/ /work/publisher/scripts/
+COPY publisher/hugo/ /opt/publisher-defaults/
+COPY publisher/media-defaults/ /opt/publisher-media-defaults/
+
+ENTRYPOINT ["/work/publisher/scripts/watch-data.sh"]

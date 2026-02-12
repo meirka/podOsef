@@ -1,0 +1,13 @@
+FROM alpine:3.20
+
+RUN apk add --no-cache \
+    bash \
+    ca-certificates \
+    wget
+
+WORKDIR /work
+COPY downloader/ /work/downloader
+
+ENV PODCAST_DIR=/srv/media/episodes
+
+ENTRYPOINT ["/work/downloader/download-podcast.sh"]

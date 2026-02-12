@@ -1,0 +1,19 @@
+baseURL: "https://github.com/meirka/podOsef"
+title: "podOsef title"
+
+params:
+  contentLanguage: "en"
+  description: "podcast description that is used for html and rss"
+  itunesExplicit: "false"
+  itunesCategories:
+    - text: "Technology"
+    - text: "Leisure"
+    - text: "Society & Culture"
+      sub:
+        - "Personal Journals"
+  itunesOwnerName: "Owner name in rss"
+  itunesOwnerEmail: "Owner email in rss"
+  itunesKeywords: "keywords,podcast,system"
+  headerLinks:
+    - url: "https://github.com/meirka/podOsef"
+      text: "header links"

@@ -1,0 +1,37 @@
+name: podosef
+
+services:
+  publisher:
+    build:
+      context: .
+      dockerfile: Dockerfile.publisher
+    working_dir: /work
+    volumes:
+      - ./data/publisher:/work/publisher/hugo
+      - ./data/media:/srv/media
+      - ./data/site:/srv/www
+    restart: unless-stopped
+
+  downloader:
+    build:
+      context: .
+      dockerfile: Dockerfile.downloader
+    environment:
+      MAIN_CDN_SERVER: "https://rss.feed.here"
+      CHECK_CDN_TIME: "3600"
+    volumes:
+      - ./data/media:/srv/media
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    depends_on:
+      - publisher
+    ports:
+      - "80:80"
+    volumes:
+      - ./data/site:/usr/share/nginx/html:ro
+      - ./data/media:/srv/media:ro
+    restart: unless-stopped

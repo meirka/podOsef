@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{{ .Site.Title }}</title>
+    <link rel="stylesheet" href="/css/bootstrap.5.3.8.min.css">
+</head>
+<body class="bg-light">
+<div class="container-fluid py-3">
+  <header class="m-2">
+    <h1 class="display-5">{{ .Site.Title }}</h1>
+    <p class="text-muted mb-1">{{ site.Params.description }}</p>
+    <p>
+      {{- range site.Params.headerLinks }}
+      <a class="link-secondary" href="{{ .url }}">{{ .text }}</a>
+      {{- end }}
+    </p>
+
+  </header>
+
+  {{ $eps := partial "episodes-data.html" . }}
+
+  {{ if not (len $eps) }}
+    <div class="alert alert-warning">No episodes found.</div>
+  {{ end }}
+
+  <div class="row g-2">
+  {{ range sort $eps "sortkey" "desc" }}
+    <div class="col-12">
+      <article class="card shadow-sm">
+        <div class="row g-1">
+          {{ if .file }}
+            {{ $picture := .picture | default "default_cover.jpg" }}
+            {{ $coverPath := printf "media/covers/%s" $picture }}
+            <div class="col-md-2">
+              <img class="img-fluid p-2" style="width: 100%; object-fit: cover;" src='{{ $coverPath }}' alt="{{ .title }}">
+              <div class="p-3 small text-muted">
+                  {{ if .artists }}
+                    <div class="fw-semibold">Hosts:</div>
+                    <ul class="mb-1">
+                      {{ range $name := (split .artists ",") }}
+                        {{ $trimmed := trim $name " " }}
+                        {{ if $trimmed }}<li>{{ $trimmed }}</li>{{ end }}
+                      {{ end }}
+                    </ul>
+                  {{ end }}
+                  <div><b>Duration:</b> {{ .duration }}</div>
+                  <div><b>File size:</b> {{ .filesize }}</div>
+                  <a class="btn btn-primary btn-sm mt-2" href='{{ printf "media/episodes/%s" .file }}' style="width: 100%" >Download</a>
+              </div>
+            </div>
+          {{ end }}
+          <div class="col">
+            <div class="card-body">
+              <h4 class="pb-2">{{ .title }}</h4>
+              {{ with .lyrics | default "No show notes" }}
+                {{ $text := replace . "\r" "\n" }}
+                {{ $text = replaceRE `(https?://[^\s<]+)` `<a href="$1" class="link-secondary" target="_blank" rel="noopener">$1</a>` $text }}
+                {{ $text = replace $text "\n" "<br>\n" }}
+                <div class="mb-3">
+                  <p class="small mt-2">{{ $text | safeHTML }}</p>
+                </div>
+              {{ end }}
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  {{ end }}
+  </div>
+
+  <footer class="text-muted small m-2 text-center">
+      Powered by <a class="link-secondary" href="https://github.com/meirka/podOsef">podOsef</a>
+  </footer>
+</div>
+</body>
+</html>

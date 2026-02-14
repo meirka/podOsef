@@ -1,0 +1,87 @@
+name: Delete Docker images for deleted tag
+
+on:
+  delete:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  delete-ghcr-versions:
+    if: github.event.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: publisher
+          - name: downloader
+          - name: nginx
+
+    steps:
+      - name: Delete matching GHCR versions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const deletedTag = context.payload.ref;
+            const packageName = `podosef-${{ matrix.name }}`;
+            const packageType = "container";
+            const scope = context.payload.organization ? "orgs" : "users";
+            const ownerParams = scope === "orgs" ? { org: owner } : { username: owner };
+
+            const listRoute =
+              scope === "orgs"
+                ? "GET /orgs/{org}/packages/{package_type}/{package_name}/versions"
+                : "GET /users/{username}/packages/{package_type}/{package_name}/versions";
+
+            const deleteRoute =
+              scope === "orgs"
+                ? "DELETE /orgs/{org}/packages/{package_type}/{package_name}/versions/{package_version_id}"
+                : "DELETE /users/{username}/packages/{package_type}/{package_name}/versions/{package_version_id}";
+
+            const versions = [];
+            for (let page = 1; ; page += 1) {
+              let response;
+              try {
+                response = await github.request(listRoute, {
+                  ...ownerParams,
+                  package_type: packageType,
+                  package_name: packageName,
+                  per_page: 100,
+                  page,
+                });
+              } catch (error) {
+                if (error.status === 404) {
+                  core.info(`Package ${owner}/${packageName} not found; skipping.`);
+                  return;
+                }
+                throw error;
+              }
+
+              versions.push(...response.data);
+              if (response.data.length < 100) {
+                break;
+              }
+            }
+
+            const matches = versions.filter((version) => {
+              const tags = version.metadata?.container?.tags || [];
+              return tags.includes(deletedTag);
+            });
+
+            if (matches.length === 0) {
+              core.info(`No versions tagged '${deletedTag}' found for ${owner}/${packageName}.`);
+              return;
+            }
+
+            for (const version of matches) {
+              await github.request(deleteRoute, {
+                ...ownerParams,
+                package_type: packageType,
+                package_name: packageName,
+                package_version_id: version.id,
+              });
+              const tags = version.metadata?.container?.tags || [];
+              core.info(`Deleted ${owner}/${packageName} version ${version.id} (tags: ${tags.join(", ")}).`);
+            }

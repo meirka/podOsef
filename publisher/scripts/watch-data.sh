@@ -64,27 +64,19 @@ if [[ ! -d "$hugo_src" ]]; then
   mkdir -p "$hugo_src"
 fi
 
-if [[ ! -d "$hugo_defaults" ]]; then
-  echo "Hugo defaults directory does not exist: $hugo_defaults" >&2
-  exit 2
-fi
 if [[ ! -f "$hugo_src/hugo.yaml" ]]; then
-  echo "Seeding Hugo defaults into $hugo_src"
-  cp -a "$hugo_defaults/." "$hugo_src/"
+  echo "Seeding Hugo config into $hugo_src"
+  cp "$hugo_defaults/hugo.yaml" "$hugo_src/hugo.yaml"
+fi
+if [[ ! -d "$hugo_src/layouts" ]]; then
+  echo "Seeding Hugo layouts into $hugo_src/layouts"
+  cp -a "$hugo_defaults/layouts" "$hugo_src/layouts"
+fi
+if [[ ! -d "$hugo_src/static" ]]; then
+  echo "Seeding Hugo static assets into $hugo_src/static"
+  cp -a "$hugo_defaults/static" "$hugo_src/static"
 fi
 
-if [[ ! -d "$media_defaults" ]]; then
-  echo "Media defaults directory does not exist: $media_defaults" >&2
-  exit 2
-fi
-if [[ ! -f "$default_cover_src" ]]; then
-  echo "Missing default cover source: $default_cover_src" >&2
-  exit 2
-fi
-if [[ ! -f "$rss_cover_src" ]]; then
-  echo "Missing RSS cover source: $rss_cover_src" >&2
-  exit 2
-fi
 if [[ ! -f "$cover_dir/default_cover.jpg" ]]; then
   cp "$default_cover_src" "$cover_dir/default_cover.jpg"
 fi

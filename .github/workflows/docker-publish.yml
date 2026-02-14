@@ -40,9 +40,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/podosef-${{ matrix.name }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=ref,event=tag
             type=raw,value=latest,enable=${{ github.ref_type == 'tag' && !contains(github.ref_name, '-') }}
             type=sha,prefix=sha-
 

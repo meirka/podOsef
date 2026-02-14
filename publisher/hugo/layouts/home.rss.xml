@@ -6,7 +6,7 @@
         <description>{{ site.Params.description }}</description>
 
         <itunes:explicit>{{ site.Params.itunesExplicit }}</itunes:explicit>
-        <itunes:image href="{{ absURL "media/covers/rss_cover.png" }}"/>
+        <itunes:image href="{{ absURL "media/covers/rss_cover.jpg" }}"/>
         <itunes:keywords>{{ site.Params.itunesKeywords }}</itunes:keywords>
 
         {{- range site.Params.itunesCategories }}

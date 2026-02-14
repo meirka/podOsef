@@ -19,7 +19,7 @@ hugo_dest="/srv/www"
 hugo_defaults="/opt/publisher-defaults"
 media_defaults="/opt/publisher-media-defaults"
 default_cover_src="$media_defaults/covers/default_cover.jpg"
-rss_cover_src="$media_defaults/covers/rss_cover.png"
+rss_cover_src="$media_defaults/covers/rss_cover.jpg"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -88,8 +88,8 @@ fi
 if [[ ! -f "$cover_dir/default_cover.jpg" ]]; then
   cp "$default_cover_src" "$cover_dir/default_cover.jpg"
 fi
-if [[ ! -f "$cover_dir/rss_cover.png" ]]; then
-  cp "$rss_cover_src" "$cover_dir/rss_cover.png"
+if [[ ! -f "$cover_dir/rss_cover.jpg" ]]; then
+  cp "$rss_cover_src" "$cover_dir/rss_cover.jpg"
 fi
 
 lock_dir="${TMPDIR:-/tmp}/podosef-sync.lock"

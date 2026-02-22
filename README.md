@@ -9,6 +9,8 @@ PodOsef is an MP3-first, lightweight, simple, self-hosted podcast publishing sys
 - Serves the MP3 files and the generated site/feed
 - Optionally mirrors a remote podcast RSS feed by downloading episodes into your archive (useful for backup or secondary hosting)
 
+See the story: https://meirz.net/2026/02/22/podosef-mp3-first-lightweight-simple-podcast-publishing-system/
+
 ## Source of truth
 
 PodOsef is filesystem-first and database-free.

@@ -23,6 +23,8 @@ fi
 
 [ -x "$(command -v wget)" ] || (echo "wget is not installed" && exit 1)
 [ -x "$(command -v sed)" ] || (echo "sed is not installed" && exit 1)
+[ -x "$(command -v grep)" ] || (echo "grep is not installed" && exit 1)
+[ -x "$(command -v tr)" ] || (echo "tr is not installed" && exit 1)
 [ -x "$(command -v xargs)" ] || (echo "xargs is not installed" && exit 1)
 
 download_and_verify_from_feed() {
@@ -45,9 +47,11 @@ download_and_verify_from_feed() {
     return 1
   fi
 
-  # Process each enclosure line; extract url and length independently so order doesn't matter.
-  printf '%s\n' "$xml" \
-    | sed -n '/enclosure/p' \
+  # Normalize the XML into a single stream, then split each enclosure tag onto its own line.
+  # This avoids only matching the last enclosure when the feed is minified onto one line.
+  printf '%s' "$xml" \
+    | tr '\r\n' '  ' \
+    | grep -o '<enclosure[^>]*>' \
     | while IFS= read -r line; do
         local url expected_len raw file tmp actual_len current_len
 
